@@ -1,20 +1,44 @@
 package com.pluralsight;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Scanner;
 
 public class PayrollCalculator {
     public static void main(String[] args) {
-        String fileName = "src/main/resources/employees.csv";
+        Scanner scanner = new Scanner(System.in);
 
-        try {
-            FileReader fileReader = new FileReader(fileName);
-            BufferedReader buffReader = new BufferedReader(fileReader);
+        System.out.print("Enter the name of the file to process: ");
+        String inputName = scanner.nextLine().trim();
 
-            buffReader.readLine(); // Пропускаем заголовок
-            String line = buffReader.readLine();
+        System.out.print("Enter the name of the payroll file to create: ");
+        String outputName = scanner.nextLine().trim();
+
+        String inputPath = "src/main/resources/" + inputName;
+        String outputPath = "src/main/resources/" + outputName;
+
+        if (inputPath.equals(outputPath)) {
+            System.out.println("Please use a different output file name.");
+            return;
+        }
+
+        try (
+                BufferedReader reader =
+                        new BufferedReader(new FileReader(inputPath));
+
+                BufferedWriter writer =
+                        new BufferedWriter(new FileWriter(outputPath))
+        ) {
+            writer.write("id|name|gross pay");
+            writer.newLine();
+
+            reader.readLine(); // Skip the header
+            String line = reader.readLine();
 
             while (line != null) {
                 String[] tokens = line.split("\\|");
@@ -28,23 +52,31 @@ public class PayrollCalculator {
                         employeeId, name, hoursWorked, payRate
                 );
 
-
-                System.out.printf("%d | %s | $%.2f%n",
+                String reportLine = String.format(
+                        Locale.US,
+                        "%d|%s|%.2f",
                         employee.getEmployeeId(),
                         employee.getName(),
-                        employee.getGrossPay());
+                        employee.getGrossPay()
+                );
 
-                line = buffReader.readLine();
+                writer.write(reportLine);
+                writer.newLine();
+
+                line = reader.readLine();
             }
 
-            buffReader.close();
-
         } catch (FileNotFoundException e) {
-            System.out.println("File not found: " + fileName);
+            System.out.println("Could not open the file: "
+                    + e.getMessage());
+            return;
 
         } catch (IOException e) {
-            System.out.println("Problem reading the file: "
+            System.out.println("Problem reading or writing the file: "
                     + e.getMessage());
+            return;
         }
+
+        System.out.println("Payroll report saved to: " + outputPath);
     }
 }
