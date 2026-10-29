@@ -28,6 +28,7 @@ public class PayrollCalculator {
                         employeeId, name, hoursWorked, payRate
                 );
 
+
                 System.out.printf("%d | %s | $%.2f%n",
                         employee.getEmployeeId(),
                         employee.getName(),
